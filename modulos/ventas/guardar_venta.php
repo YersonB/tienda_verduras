@@ -5,6 +5,7 @@
 header('Content-Type: application/json');
 
 // 2. Incluir la conexión a la base de datos
+require_once '../../includes/seguridad.php'; 
 require_once '../../config/conexion.php';
 
 // 3. Capturar el flujo de entrada JSON desde la petición Fetch

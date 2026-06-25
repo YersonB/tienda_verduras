@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,17 +16,17 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">
+        <a class="navbar-brand fw-bold" href="/tienda_verduras/modulos/productos/index.php">
             <i class="bi bi-shop me-2"></i>Tienda Verduras
         </a>
-        <button class="navbar-toggler" type="text/browser" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/tienda_verduras/modulos/productos/index.php">
-                        <i class="bi bi-egg-fried me-1"></i>Inventario
+                    <a class="nav-link" href="/tienda_verduras/modulos/productos/index.php">
+                        <i class="bi bi-box-seam me-1"></i>Inventario
                     </a>
                 </li>
                 <li class="nav-item">
@@ -29,11 +34,19 @@
                         <i class="bi bi-cart-plus me-1"></i>Nueva Venta
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="bi bi-graph-up me-1"></i>Reportes
-                    </a>
-                </li>
+                
+                <?php if (isset($_SESSION['usuario_nombre'])): ?>
+                    <li class="nav-item ms-lg-3">
+                        <span class="badge bg-dark text-white p-2">
+                            <i class="bi bi-person-circle me-1"></i> <?= htmlspecialchars($_SESSION['usuario_nombre']); ?>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="/tienda_verduras/logout.php" onclick="return confirm('¿Desea cerrar sesión?');">
+                            <i class="bi bi-box-arrow-right ms-1"></i> Salir
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
         </div>
     </div>

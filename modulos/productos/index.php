@@ -1,7 +1,7 @@
 <?php
 // 1. Incluir la conexión a la base de datos de manera relativa
+require_once '../../includes/seguridad.php'; // <--- NUEVO: Bloquea accesos no autorizados
 require_once '../../config/conexion.php';
-
 // 2. Hacer la consulta SQL para traer todos los productos
 try {
     $sql = "SELECT * FROM productos ORDER BY nombre ASC";
