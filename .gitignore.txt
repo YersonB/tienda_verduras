@@ -1,0 +1,41 @@
+# =========================================================================
+# .gitignore - Proyecto Tienda de Verduras (PHP + XAMPP + VS Code)
+# =========================================================================
+
+# --- Archivos Temporales del Script de Seguridad ---
+# Evita que se suba el archivo con el que forzamos la contraseña del administrador
+generar_usuario.php
+
+# --- Configuraciones de Visual Studio Code y Editores ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+
+# --- Archivos del Sistema Operativo ---
+.DS_Store
+.DS_Store?
+_thumbs
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Base de Datos y Respaldos ---
+# Evita subir los archivos .sql que exportes como copia de seguridad de phpMyAdmin
+*.sql
+
+# --- Configuraciones del Servidor Local (XAMPP / Apache) ---
+# Por si acaso arrastras archivos de logs o configuraciones locales de Apache
+*.log
+.htaccess.local
+
+# --- Futuros Archivos de Configuración Sensible ---
+# Si más adelante decides usar variables de entorno o archivos de credenciales separados
+.env
+.env.local
+config/credenciales.php
+config/config.local.php
