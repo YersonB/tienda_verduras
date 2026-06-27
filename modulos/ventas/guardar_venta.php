@@ -1,123 +1,109 @@
 <?php
 // modulos/ventas/guardar_venta.php
-
-// 1. Configurar la cabecera para responder en formato JSON
 header('Content-Type: application/json');
 
-// 2. Incluir la conexión a la base de datos
-require_once '../../includes/seguridad.php'; 
+require_once '../../includes/seguridad.php';
 require_once '../../config/conexion.php';
 
-// 3. Capturar el flujo de entrada JSON desde la petición Fetch
+csrf_verify_json();
+
 $inputJSON = file_get_contents('php://input');
-$input = json_get_contents_array($inputJSON); // Decodificarlo como un array asociativo
+$input = json_decode($inputJSON, true);
 
-// Función auxiliar para validar la decodificación de manera limpia
-function json_get_contents_array($json) {
-    return json_decode($json, true);
-}
-
-// 4. Validar que tengamos datos válidos
-if (!$input || empty($input['productos']) || !isset($input['usuario_id'])) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Datos de la venta incompletos o vacíos.'
-    ]);
+if (!$input || empty($input['productos']) || !is_array($input['productos'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Datos de la venta incompletos o vacíos.']);
     exit;
 }
 
-$usuario_id = $input['usuario_id'];
+// El usuario siempre viene de la sesión del servidor, nunca del cliente
+$usuario_id = $_SESSION['usuario_id'];
 $productos  = $input['productos'];
 
 try {
-    // 5. INICIAR TRANSACCIÓN SQL
-    // Esto garantiza que si un producto falla en el stock, toda la operación se cancele (Rollback)
     $pdo->beginTransaction();
 
-    // 6. Calcular el total real en el backend por seguridad
-    $total_venta = 0;
-    foreach ($productos as $item) {
-        $total_venta += (float)$item['subtotal'];
-    }
-
-    // 7. Insertar la cabecera de la venta
-    $sqlVenta = "INSERT INTO ventas (usuario_id, total) VALUES (:usuario_id, :total)";
-    $stmtVenta = $pdo->prepare($sqlVenta);
-    $stmtVenta->execute([
-        ':usuario_id' => $usuario_id,
-        ':total'      => $total_venta
-    ]);
-    
-    // Obtener el ID autogenerado de la venta recién creada
-    $venta_id = $pdo->lastInsertId();
-
-    // 8. Preparar las consultas para el bucle de detalles
-    $sqlDetalle = "INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal) 
-                   VALUES (:venta_id, :producto_id, :cantidad, :precio_unitario, :subtotal)";
-    $stmtDetalle = $pdo->prepare($sqlDetalle);
-
-    $sqlCheckStock = "SELECT stock, nombre FROM productos WHERE id = :id FOR UPDATE";
+    // Preparar consultas reutilizables antes del bucle
+    $sqlCheckStock = "SELECT id, nombre, stock, precio_venta FROM productos WHERE id = :id FOR UPDATE";
     $stmtCheckStock = $pdo->prepare($sqlCheckStock);
 
     $sqlActualizarStock = "UPDATE productos SET stock = stock - :cantidad WHERE id = :id";
     $stmtActualizarStock = $pdo->prepare($sqlActualizarStock);
 
-    // 9. Recorrer el carrito para validar stock, guardar detalles y descontar inventario
-    foreach ($productos as $item) {
-        $producto_id     = $item['id'];
-        $cantidad_vendida = (float)$item['cantidad'];
-        $precio_unitario  = (float)$item['precio'];
-        $subtotal         = (float)$item['subtotal'];
+    $sqlDetalle = "INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal)
+                   VALUES (:venta_id, :producto_id, :cantidad, :precio_unitario, :subtotal)";
+    $stmtDetalle = $pdo->prepare($sqlDetalle);
 
-        // A. Verificar stock real en la base de datos (con bloqueo FOR UPDATE para concurrencia)
+    // Recorrer el carrito: validar stock y calcular totales con precios reales de la BD
+    $total_venta = 0;
+    $items_validados = [];
+
+    foreach ($productos as $item) {
+        $producto_id      = (int)$item['id'];
+        $cantidad_vendida = (float)$item['cantidad'];
+
+        if ($cantidad_vendida <= 0) {
+            throw new Exception("La cantidad debe ser mayor a cero.");
+        }
+
+        // Leer precio y stock directamente de la BD (bloqueo FOR UPDATE para concurrencia)
         $stmtCheckStock->execute([':id' => $producto_id]);
         $prodBD = $stmtCheckStock->fetch();
 
         if (!$prodBD) {
-            throw new Exception("El producto con ID {$producto_id} no existe.");
+            throw new Exception("El producto con ID {$producto_id} no existe en el inventario.");
         }
 
         $stock_actual = (float)$prodBD['stock'];
-
         if ($stock_actual < $cantidad_vendida) {
-            throw new Exception("Stock insuficiente para: " . $prodBD['nombre'] . ". Disponible: " . $stock_actual);
+            throw new Exception(
+                "Stock insuficiente para: {$prodBD['nombre']}. " .
+                "Disponible: {$stock_actual}, solicitado: {$cantidad_vendida}."
+            );
         }
 
-        // B. Insertar el registro en el detalle de la venta
+        // El precio y subtotal se calculan desde la BD, ignorando lo que envió el cliente
+        $precio_real = (float)$prodBD['precio_venta'];
+        $subtotal_real = round($precio_real * $cantidad_vendida, 2);
+        $total_venta += $subtotal_real;
+
+        $items_validados[] = [
+            'producto_id'     => $producto_id,
+            'cantidad'        => $cantidad_vendida,
+            'precio_unitario' => $precio_real,
+            'subtotal'        => $subtotal_real,
+        ];
+    }
+
+    // Insertar la cabecera de la venta con el total calculado en el servidor
+    $sqlVenta = "INSERT INTO ventas (usuario_id, total) VALUES (:usuario_id, :total)";
+    $stmtVenta = $pdo->prepare($sqlVenta);
+    $stmtVenta->execute([':usuario_id' => $usuario_id, ':total' => round($total_venta, 2)]);
+    $venta_id = $pdo->lastInsertId();
+
+    // Insertar detalles y descontar stock
+    foreach ($items_validados as $item) {
         $stmtDetalle->execute([
             ':venta_id'        => $venta_id,
-            ':producto_id'     => $producto_id,
-            ':cantidad'        => $cantidad_vendida,
-            ':precio_unitario' => $precio_unitario,
-            ':subtotal'        => $subtotal
+            ':producto_id'     => $item['producto_id'],
+            ':cantidad'        => $item['cantidad'],
+            ':precio_unitario' => $item['precio_unitario'],
+            ':subtotal'        => $item['subtotal'],
         ]);
 
-        // C. Actualizar y restar el stock en la tabla productos
         $stmtActualizarStock->execute([
-            ':cantidad' => $cantidad_vendida,
-            ':id'       => $producto_id
+            ':cantidad' => $item['cantidad'],
+            ':id'       => $item['producto_id'],
         ]);
     }
 
-    // 10. Si todo salió bien, confirmamos los cambios de forma permanente en la BD
     $pdo->commit();
 
-    // Retornamos una respuesta exitosa a JavaScript
-    echo json_encode([
-        'status'   => 'success',
-        'venta_id' => $venta_id
-    ]);
+    echo json_encode(['status' => 'success', 'venta_id' => $venta_id]);
 
 } catch (Exception $e) {
-    // Si algo falló en cualquier punto del bucle, cancelamos absolutamente todo
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-
-    // Retornamos el error estructurado a la interfaz
-    echo json_encode([
-        'status'  => 'error',
-        'message' => $e->getMessage()
-    ]);
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
 ?>

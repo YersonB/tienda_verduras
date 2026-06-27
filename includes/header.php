@@ -2,6 +2,12 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$uri_actual = $_SERVER['REQUEST_URI'];
+function nav_active(string $segmento): string {
+    global $uri_actual;
+    return str_contains($uri_actual, $segmento) ? 'active" aria-current="page' : '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,37 +20,72 @@ if (session_status() === PHP_SESSION_NONE) {
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/tienda_verduras/modulos/productos/index.php">
-            <i class="bi bi-shop me-2"></i>Tienda Verduras
+        <a class="navbar-brand fw-bold text-success" href="/tienda_verduras/modulos/dashboard/index.php">
+            <i class="bi bi-shop me-2"></i>Sabor & Frescura
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/tienda_verduras/modulos/productos/index.php">
+                    <a class="nav-link <?= nav_active('dashboard'); ?>" href="/tienda_verduras/modulos/dashboard/index.php">
+                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= nav_active('productos'); ?>" href="/tienda_verduras/modulos/productos/index.php">
                         <i class="bi bi-box-seam me-1"></i>Inventario
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/tienda_verduras/modulos/ventas/nueva_venta.php">
+                    <a class="nav-link <?= nav_active('nueva_venta'); ?>" href="/tienda_verduras/modulos/ventas/nueva_venta.php">
                         <i class="bi bi-cart-plus me-1"></i>Nueva Venta
                     </a>
                 </li>
-                
+                <li class="nav-item">
+                    <a class="nav-link <?= nav_active('historial'); ?>" href="/tienda_verduras/modulos/ventas/historial.php">
+                        <i class="bi bi-clock-history me-1"></i>Historial
+                    </a>
+                </li>
+                <?php if (($_SESSION['usuario_rol'] ?? '') === 'admin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link <?= nav_active('usuarios'); ?>" href="/tienda_verduras/modulos/usuarios/index.php">
+                        <i class="bi bi-people me-1"></i>Usuarios
+                    </a>
+                </li>
+                <?php endif; ?>
+            </ul>
+            <ul class="navbar-nav mb-2 mb-lg-0">
                 <?php if (isset($_SESSION['usuario_nombre'])): ?>
-                    <li class="nav-item ms-lg-3">
-                        <span class="badge bg-dark text-white p-2">
-                            <i class="bi bi-person-circle me-1"></i> <?= htmlspecialchars($_SESSION['usuario_nombre']); ?>
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-warning fw-bold" href="/tienda_verduras/logout.php" onclick="return confirm('¿Desea cerrar sesión?');">
-                            <i class="bi bi-box-arrow-right ms-1"></i> Salir
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <?= htmlspecialchars($_SESSION['usuario_nombre']); ?>
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li>
+                                <span class="dropdown-item-text text-muted" style="font-size:0.8rem;">
+                                    Rol: <?= htmlspecialchars(ucfirst($_SESSION['usuario_rol'] ?? 'usuario')); ?>
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="/tienda_verduras/modulos/perfil/index.php">
+                                    <i class="bi bi-person-fill me-1"></i> Mi Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/tienda_verduras/logout.php"
+                                   onclick="return confirm('¿Desea cerrar sesión?');">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Salir
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 <?php endif; ?>
             </ul>
@@ -52,4 +93,4 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
 </nav>
 
-<div class="container">
+<div class="container mt-2">

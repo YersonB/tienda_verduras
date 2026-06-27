@@ -3,9 +3,7 @@
 require_once '../../includes/seguridad.php'; 
 require_once '../../config/conexion.php';
 
-// Para este ejemplo, asumiremos temporalmente que el ID del usuario/vendedor es 1 
-// (el administrador que creamos por defecto). Más adelante se puede cambiar por la sesión activa.
-$usuario_id = 1; 
+$usuario_id = $_SESSION['usuario_id'];
 
 // 2. Traer los productos con stock disponible para el selector
 try {
@@ -130,6 +128,7 @@ require_once '../../includes/header.php';
 </div>
 
 <script>
+const CSRF_TOKEN = '<?= htmlspecialchars(csrf_token()); ?>';
 let carrito = [];
 const selectProducto = document.getElementById('select-producto');
 const infoStock = document.getElementById('info-stock');
@@ -176,12 +175,12 @@ document.getElementById('form-agregar-producto').addEventListener('submit', func
     const unidad = option.dataset.unidad;
 
     if (cantidad <= 0 || isNaN(cantidad)) {
-        alert("Ingrese una cantidad válida mayor a cero.");
+        mostrarToast("Ingrese una cantidad válida mayor a cero.", "warning");
         return;
     }
 
     if (cantidad > stockMax) {
-        alert("No hay suficiente stock. El stock máximo disponible es: " + stockMax + " " + unidad);
+        mostrarToast("No hay suficiente stock. Máximo disponible: " + stockMax + " " + unidad, "warning");
         return;
     }
 
@@ -189,7 +188,7 @@ document.getElementById('form-agregar-producto').addEventListener('submit', func
     const existe = carrito.find(item => item.id === id);
     if (existe) {
         if ((existe.cantidad + cantidad) > stockMax) {
-            alert("La suma de las cantidades supera el stock disponible en tienda.");
+            mostrarToast("La suma de las cantidades supera el stock disponible.", "warning");
             return;
         }
         existe.cantidad += cantidad;
@@ -252,40 +251,51 @@ function eliminarItem(index) {
 }
 
 function limpiarCarrito() {
-    if(confirm("¿Seguro que desea limpiar toda la lista actual?")) {
-        carrito = [];
-        actualizarTabla();
-    }
+    if (carrito.length === 0) return;
+    confirmarModal("¿Seguro que desea limpiar toda la lista actual?", "Sí, limpiar").then(ok => {
+        if (ok) { carrito = []; actualizarTabla(); }
+    });
 }
 
 // 4. Enviar los datos del carrito al servidor PHP para procesarlos
 function procesarVenta() {
     if (carrito.length === 0) return;
 
-    if (!confirm("¿Confirmar y procesar la venta actual?")) return;
+    confirmarModal("¿Confirmar y procesar la venta actual?", "Sí, procesar").then(ok => {
+        if (!ok) return;
 
-    // Usaremos la API Fetch para enviar el array en formato JSON de forma asíncrona
-    fetch('guardar_venta.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            usuario_id: <?= $usuario_id; ?>,
-            productos: carrito
+        const btn = document.getElementById('btn-procesar-venta');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
+        fetch('guardar_venta.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': CSRF_TOKEN
+            },
+            body: JSON.stringify({ productos: carrito })
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            alert("¡Venta registrada exitosamente! Código de Boleta: #" + data.venta_id);
-            // Recargar la página para limpiar todo y actualizar el stock visual del selector
-            window.location.reload();
-        } else {
-            alert("Error al procesar la venta: " + data.message);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Ocurrió un error en la comunicación de datos.");
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                mostrarToast("¡Venta registrada! Boleta #" + data.venta_id, "success");
+                // Abrir la boleta imprimible de inmediato
+                setTimeout(() => {
+                    window.location.href = 'detalle_venta.php?id=' + data.venta_id + '&print=1';
+                }, 700);
+            } else {
+                mostrarToast("Error: " + data.message, "danger");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cash-coin me-2"></i>Procesar Venta';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            mostrarToast("Ocurrió un error en la comunicación de datos.", "danger");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-cash-coin me-2"></i>Procesar Venta';
+        });
     });
 }
 </script>

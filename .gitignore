@@ -27,11 +27,17 @@ Desktop.ini
 # --- Base de Datos y Respaldos ---
 # Evita subir los archivos .sql que exportes como copia de seguridad de phpMyAdmin
 *.sql
+# ...pero SÍ versionar las migraciones del proyecto (esquema de la BD)
+!sql/migraciones.sql
 
 # --- Configuraciones del Servidor Local (XAMPP / Apache) ---
 # Por si acaso arrastras archivos de logs o configuraciones locales de Apache
 *.log
 .htaccess.local
+
+# --- Archivos generados en runtime por la app ---
+# Logs de errores y registro de intentos de login (anti fuerza bruta)
+logs/*.json
 
 # --- Futuros Archivos de Configuración Sensible ---
 # Si más adelante decides usar variables de entorno o archivos de credenciales separados

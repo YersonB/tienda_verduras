@@ -8,6 +8,7 @@ $tipo_alerta = "";
 
 // 2. Procesar el formulario cuando se envía (Método POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    csrf_verify();
     // Limpiar y recibir los datos del formulario
     $nombre = trim($_POST['nombre']);
     $categoria = trim($_POST['categoria']);
@@ -80,6 +81,7 @@ require_once '../../includes/header.php';
             </div>
             <div class="card-body p-4">
                 <form action="crear.php" method="POST">
+                    <?= csrf_field(); ?>
                     
                     <div class="row g-3">
                         <div class="col-md-12">

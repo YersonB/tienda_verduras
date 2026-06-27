@@ -16,6 +16,7 @@ $id = trim($_GET['id']);
 
 // 3. Procesar la actualización cuando se envía el formulario (Método POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    csrf_verify();
     $nombre = trim($_POST['nombre']);
     $categoria = trim($_POST['categoria']);
     $precio_compra = trim($_POST['precio_compra']);
@@ -101,6 +102,7 @@ require_once '../../includes/header.php';
             </div>
             <div class="card-body p-4">
                 <form action="editar.php?id=<?= $id; ?>" method="POST">
+                    <?= csrf_field(); ?>
                     
                     <div class="row g-3">
                         <div class="col-md-12">
