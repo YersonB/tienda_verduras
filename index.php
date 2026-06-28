@@ -1,91 +1,393 @@
 <?php
-session_start();
-if (isset($_SESSION['usuario_id'])) {
-    header("Location: modulos/dashboard/index.php");
-    exit;
+// index.php — Landing pública: "El mercadito de Julia"
+require_once 'config/conexion.php';
+require_once 'includes/config_sitio.php';
+
+$canastas = [];
+try {
+    $canastas = $pdo->query(
+        "SELECT id, nombre, descripcion, contenido, precio, etiqueta
+         FROM canastas WHERE activo = 1 ORDER BY precio ASC"
+    )->fetchAll();
+} catch (\PDOException $e) {
+    $canastas = [];
 }
-require_once 'includes/cabeceras.php';
-require_once 'includes/csrf.php';
 
-$error = isset($_GET['error']) ? $_GET['error'] : "";
-$min   = isset($_GET['min']) && is_numeric($_GET['min']) ? (int)$_GET['min'] : 15;
+$titulo = NEGOCIO_NOMBRE . ' — ' . NEGOCIO_LEMA;
+require_once 'includes/publico_header.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Tienda de Verduras</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body class="d-flex flex-column min-vh-100" style="background: url('/tienda_verduras/assets/img/vegetables.jpg') no-repeat center center fixed; background-size: cover;">
 
-<main class="flex-grow-1 d-flex align-items-center justify-content-center">
-    <div class="card shadow-lg border-0 rounded-3 animate__animated animate__zoomIn" style="width: 100%; max-width: 450px;">
-        <div class="card-header bg-success text-white text-center py-4 rounded-top-3">
-            <h3 class="mb-1 fw-bold"><i class="bi bi-shop me-2"></i>Sabor & Frescura</h3>
-            <small class="text-white-50">Sistema de Gestión de Ventas</small>
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero pt-5">
+    <span class="hero-blob" style="width:420px;height:420px;top:-120px;left:-100px;"></span>
+    <span class="hero-blob" style="width:300px;height:300px;bottom:-120px;right:8%;"></span>
+    <span class="float-emoji animar-flotar"        style="top:18%;left:6%;font-size:3rem;">🍅</span>
+    <span class="float-emoji animar-flotar lento"  style="top:62%;left:12%;font-size:2.4rem;">🥕</span>
+    <span class="float-emoji animar-flotar rapido" style="top:24%;right:10%;font-size:2.8rem;">🍓</span>
+    <span class="float-emoji animar-flotar"        style="bottom:16%;right:16%;font-size:2.6rem;">🥦</span>
+
+    <div class="container py-5" style="position:relative;z-index:2;">
+        <div class="row align-items-center g-5 py-lg-4">
+            <div class="col-lg-7 text-center text-lg-start">
+                <span class="badge bg-warning text-dark fw-bold mb-3 px-3 py-2 rounded-pill animate__animated animate__fadeInDown">
+                    <i class="bi bi-stars me-1"></i>Tu mercado, sin moverte de casa
+                </span>
+                <h1 class="display-2 mb-3 animate__animated animate__fadeInUp">
+                    Hola, soy <span style="color:var(--amarillo)">Julia</span><br>
+                    y hago <span style="text-decoration:underline wavy var(--amarillo);text-underline-offset:8px;">tu mercado</span> por ti
+                </h1>
+                <p class="fs-5 text-white-50 mb-4 animate__animated animate__fadeInUp animate__delay-1s" style="max-width:560px;">
+                    ¿Sin tiempo para ir al mercado? Yo elijo a mano tus <strong class="text-white">carnes, frutas,
+                    verduras y abarrotes</strong> bien fresquitos y te los llevo a tu puerta. 🛵💨
+                </p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start animate__animated animate__fadeInUp animate__delay-1s">
+                    <a href="#lista" class="btn btn-amarillo btn-lg">
+                        <i class="bi bi-pencil-square me-2"></i>Arma tu lista
+                    </a>
+                    <a href="<?= whatsapp_saludo(); ?>" target="_blank" rel="noopener" class="btn btn-wa btn-lg">
+                        <i class="bi bi-whatsapp me-2"></i>Pídeme directo
+                    </a>
+                </div>
+
+                <div class="row g-3 mt-4 text-center text-lg-start animate__animated animate__fadeIn animate__delay-2s" style="max-width:560px;">
+                    <div class="col-4"><div class="fs-3 fw-bold">🕒</div><small class="text-white-50">Te ahorro<br>el tiempo</small></div>
+                    <div class="col-4"><div class="fs-3 fw-bold">✋</div><small class="text-white-50">Elijo<br>a mano</small></div>
+                    <div class="col-4"><div class="fs-3 fw-bold">🛵</div><small class="text-white-50">Llevo a<br>tu puerta</small></div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+                <div class="position-relative">
+                    <div class="animar-flotar" style="font-size:15rem;line-height:1;filter:drop-shadow(0 20px 30px rgba(0,0,0,.3));">🧺</div>
+                    <span class="badge bg-white text-success shadow position-absolute animate__animated animate__pulse animate__infinite"
+                          style="top:10%;right:-10px;font-size:.85rem;">🥬 ¡Fresco hoy!</span>
+                    <span class="badge bg-white text-danger shadow position-absolute"
+                          style="bottom:14%;left:-20px;font-size:.85rem;">🛵 Entrega rápida</span>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-5">
-            <?php if ($error == "1"): ?>
-                <div class="alert alert-danger text-center py-2 animate__animated animate__shakeX" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Correo o contraseña incorrectos.
-                </div>
-            <?php elseif ($error == "2"): ?>
-                <div class="alert alert-warning text-center py-2 animate__animated animate__shakeX" role="alert">
-                    <i class="bi bi-lock-fill me-2"></i> Debe iniciar sesión para acceder.
-                </div>
-            <?php elseif ($error == "3"): ?>
-                <div class="alert alert-info text-center py-2 animate__animated animate__shakeX" role="alert">
-                    <i class="bi bi-clock-history me-2"></i> Su sesión expiró por inactividad. Ingrese de nuevo.
-                </div>
-            <?php elseif ($error == "4"): ?>
-                <div class="alert alert-danger text-center py-2 animate__animated animate__shakeX" role="alert">
-                    <i class="bi bi-shield-lock-fill me-2"></i> Demasiados intentos fallidos. Espere <?= htmlspecialchars($min); ?> min e intente otra vez.
-                </div>
-            <?php endif; ?>
+    </div>
 
-            <form action="login_proceso.php" method="POST" class="mt-4">
-                <?= csrf_field(); ?>
-                <div class="mb-3">
-                    <label for="correo" class="form-label fw-semibold">Correo Electrónico</label>
-                    <div class="input-group has-validation">
-                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="email" class="form-control" id="correo" name="correo" placeholder="ejemplo@tienda.com" required aria-describedby="emailFeedback">
-                        <div id="emailFeedback" class="invalid-feedback">
-                            Por favor, introduce un correo electrónico válido.
+    <div class="onda">
+        <svg viewBox="0 0 1440 90" preserveAspectRatio="none" style="width:100%;height:70px;">
+            <path fill="#ffffff" d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,74.7C1120,75,1280,53,1360,42.7L1440,32L1440,90L0,90Z"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- ══════════════ MARQUEE ══════════════ -->
+<div class="marquee bg-white border-bottom">
+    <div class="marquee__track">
+        <?php $loop = '🍅 Tomate · 🥕 Zanahoria · 🍎 Manzana · 🥩 Carnes · 🍌 Plátano · 🥬 Lechuga · 🥔 Papa · 🍓 Fresa · 🧅 Cebolla · 🥑 Palta · 🍗 Pollo · 🌽 Choclo · ';
+        echo str_repeat('<span>'.$loop.'</span>', 2); ?>
+    </div>
+</div>
+
+<!-- ══════════════ CÓMO FUNCIONA ══════════════ -->
+<section id="como-funciona" class="seccion py-5 bg-crema2">
+    <div class="container py-4">
+        <div class="text-center mb-5 reveal">
+            <span class="badge badge-soft px-3 py-2 rounded-pill mb-2">Súper fácil</span>
+            <h2 class="display-5">¿Cómo funciona?</h2>
+            <p class="fs-5 lead-soft">Tres pasitos y listo. 😉</p>
+        </div>
+        <div class="row g-4">
+            <?php
+            $pasos = [
+                ['linear-gradient(135deg,#16a34a,#15803d)','bi-pencil-square','Mándame tu lista','Escribe lo que necesitas o elige una canasta. ¡Por WhatsApp en segundos!'],
+                ['linear-gradient(135deg,#fb923c,#f97316)','bi-bag-heart','Yo lo compro','Voy al mercado y escojo a mano cada producto, fresco y al mejor precio.'],
+                ['linear-gradient(135deg,#fb7185,#ef4444)','bi-house-heart','Te lo llevo','Recibes todo en tu puerta el día y la hora que prefieras. 🛵'],
+            ];
+            foreach ($pasos as $i => $p): ?>
+                <div class="col-md-4 reveal d<?= $i+1; ?>">
+                    <div class="card border-0 shadow-sm h-100 text-center card-hover position-relative">
+                        <div class="card-body py-5 px-4">
+                            <span class="paso-num position-absolute top-0 start-50 translate-middle"><?= $i+1; ?></span>
+                            <span class="icono-circulo mt-2 mb-3" style="background:<?= $p[0]; ?>"><i class="bi <?= $p[1]; ?>"></i></span>
+                            <h4 class="fw-bold h5"><?= $p[2]; ?></h4>
+                            <p class="lead-soft mb-0"><?= $p[3]; ?></p>
                         </div>
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <label for="password" class="form-label fw-semibold">Contraseña</label>
-                    <div class="input-group has-validation">
-                        <span class="input-group-text"><i class="bi bi-key"></i></span>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="********" required aria-describedby="passwordFeedback">
-                        <div id="passwordFeedback" class="invalid-feedback">
-                            Por favor, introduce tu contraseña.
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════ ARMA TU LISTA (INTERACTIVO) ══════════════ -->
+<section id="lista" class="seccion py-5" style="background:linear-gradient(135deg,var(--verde) 0%,var(--verde-osc) 60%,var(--verde-prof) 100%);color:#fff;">
+    <div class="container py-4">
+        <div class="text-center mb-5 reveal">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">✍️ En segundos</span>
+            <h2 class="display-5 text-white">Arma tu lista y te la mando lista</h2>
+            <p class="fs-5 text-white-50">Toca los productos para agregarlos o escribe el tuyo. Luego, ¡un clic a WhatsApp! 👇</p>
+        </div>
+
+        <div class="row g-4 justify-content-center align-items-start">
+            <!-- Selector de productos -->
+            <div class="col-lg-6 reveal">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-4">
+                        <ul class="nav nav-pills mb-3 gap-2 flex-nowrap overflow-auto" id="catTabs">
+                            <li class="nav-item"><button class="nav-link active" data-cat="verduras" type="button">🥬 Verduras</button></li>
+                            <li class="nav-item"><button class="nav-link" data-cat="frutas" type="button">🍎 Frutas</button></li>
+                            <li class="nav-item"><button class="nav-link" data-cat="carnes" type="button">🥩 Carnes</button></li>
+                            <li class="nav-item"><button class="nav-link" data-cat="abarrotes" type="button">🛒 Abarrotes</button></li>
+                        </ul>
+
+                        <div id="chipsContenedor" class="d-flex flex-wrap gap-2 mb-4" style="min-height:120px;"></div>
+
+                        <label class="form-label fw-bold text-dark small">¿No está en la lista? Escríbelo:</label>
+                        <div class="input-group">
+                            <input type="text" id="inputCustom" class="form-control" placeholder="Ej. 2 kg de uva, pan integral...">
+                            <button class="btn btn-naranja px-3" type="button" onclick="agregarCustom()">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-success btn-lg fw-bold animate__animated animate__pulse animate__infinite">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar al Sistema
-                    </button>
+            <!-- Lista del cliente (nota) -->
+            <div class="col-lg-5 reveal d2">
+                <div class="nota">
+                    <div class="nota__head text-white d-flex justify-content-between align-items-center px-4 py-3" style="border-radius:22px 22px 0 0;">
+                        <span class="fw-bold"><i class="bi bi-card-checklist me-2"></i>Mi lista</span>
+                        <span class="badge bg-white text-success rounded-pill" id="contadorItems">0</span>
+                    </div>
+                    <div class="p-4">
+                        <div id="listaVacia" class="text-center py-4 lead-soft">
+                            <div style="font-size:3rem;">📝</div>
+                            <p class="mb-0">Tu lista está vacía.<br>Agrega productos de la izquierda.</p>
+                        </div>
+                        <div id="listaItems"></div>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="button" class="btn btn-wa btn-lg" onclick="enviarListaWA()">
+                                <i class="bi bi-whatsapp me-2"></i>Enviar mi lista por WhatsApp
+                            </button>
+                            <a href="<?= whatsapp_saludo(); ?>" target="_blank" rel="noopener" class="btn btn-outline-success">
+                                <i class="bi bi-chat-dots me-2"></i>Prefiero escribir directo
+                            </a>
+                        </div>
+                        <p class="text-center lead-soft small mt-3 mb-0">
+                            <i class="bi bi-shield-check me-1"></i>Sin compromiso. Te confirmo el precio antes de comprar.
+                        </p>
+                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-</main>
+</section>
 
-<footer class="footer mt-auto py-3 bg-light border-top">
-    <div class="container text-center">
-        <span class="text-muted">&copy; <?= date("Y"); ?> Sabor & Frescura. Todos los derechos reservados.</span>
+<!-- ══════════════ QUÉ COMPRO ══════════════ -->
+<section id="categorias" class="seccion py-5 bg-crema">
+    <div class="container py-4">
+        <div class="text-center mb-5 reveal">
+            <span class="badge badge-soft px-3 py-2 rounded-pill mb-2">Variedad</span>
+            <h2 class="display-5">Te compro de todo 🛒</h2>
+            <p class="fs-5 lead-soft">Todo lo de tu mercado, en un solo pedido.</p>
+        </div>
+        <div class="row g-4">
+            <?php
+            $cats = [
+                ['🥩','Carnes','Res, pollo, cerdo y embutidos','#fee2e2'],
+                ['🍎','Frutas','De estación, dulces y en su punto','#fef3c7'],
+                ['🥬','Verduras','Verdes y bien fresquitas','#dcfce7'],
+                ['🛒','Abarrotes','Arroz, aceite, menestras y más','#ffedd5'],
+            ];
+            foreach ($cats as $i => $c): ?>
+                <div class="col-6 col-md-3 reveal d<?= $i+1; ?>">
+                    <div class="card border-0 shadow-sm h-100 text-center card-hover">
+                        <div class="card-body py-5">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                                 style="width:84px;height:84px;background:<?= $c[3]; ?>;font-size:2.6rem;"><?= $c[0]; ?></div>
+                            <h4 class="fw-bold h5 mb-1"><?= $c[1]; ?></h4>
+                            <p class="lead-soft small mb-0"><?= $c[2]; ?></p>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
-</footer>
+</section>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-</body>
-</html>
+<!-- ══════════════ CANASTAS ══════════════ -->
+<section id="canastas" class="seccion py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5 reveal">
+            <span class="badge badge-soft px-3 py-2 rounded-pill mb-2">Listas para pedir</span>
+            <h2 class="display-5">Mis canastas 🧺</h2>
+            <p class="fs-5 lead-soft">Combos pensados para ti. O arma la tuya a medida.</p>
+        </div>
+
+        <?php if (empty($canastas)): ?>
+            <div class="alert alert-warning text-center reveal">
+                Pronto publicaré mis canastas. ¡Mientras tanto, mándame tu lista por WhatsApp! 💚
+            </div>
+        <?php else: ?>
+            <div class="row g-4">
+                <?php foreach ($canastas as $i => $c):
+                    $msg = "¡Hola Julia! 🛒 Quiero pedir la *{$c['nombre']}* (S/. " . number_format($c['precio'], 2) . "). ¿Me ayudas?";
+                    $cols = ['#16a34a','#fb923c','#fb7185','#f59e0b'];
+                    $bar = $cols[$i % count($cols)];
+                ?>
+                    <div class="col-md-6 col-lg-3 reveal d<?= ($i%4)+1; ?>">
+                        <div class="card border-0 shadow-sm h-100 card-hover overflow-hidden">
+                            <div style="height:6px;background:<?= $bar; ?>;"></div>
+                            <div class="card-body d-flex flex-column">
+                                <?php if (!empty($c['etiqueta'])): ?>
+                                    <span class="badge bg-warning text-dark align-self-start mb-2"><?= htmlspecialchars($c['etiqueta']); ?></span>
+                                <?php endif; ?>
+                                <h4 class="fw-bold h5"><?= htmlspecialchars($c['nombre']); ?></h4>
+                                <p class="lead-soft small flex-grow-1"><?= htmlspecialchars($c['contenido'] ?: $c['descripcion']); ?></p>
+                                <div class="d-flex align-items-center justify-content-between mt-2">
+                                    <span class="fs-4 fw-bold texto-degradado">S/. <?= number_format($c['precio'], 2); ?></span>
+                                    <a href="<?= whatsapp_link($msg); ?>" target="_blank" rel="noopener" class="btn btn-sm btn-wa">
+                                        <i class="bi bi-whatsapp me-1"></i>Pedir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="text-center mt-4 reveal">
+                <a href="solicitar.php" class="btn btn-outline-success btn-lg">
+                    <i class="bi bi-list-check me-1"></i>Pedido detallado con varias canastas
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<!-- ══════════════ FAQ ══════════════ -->
+<section id="faq" class="seccion py-5 bg-crema2">
+    <div class="container py-4">
+        <div class="text-center mb-5 reveal">
+            <span class="badge badge-soft px-3 py-2 rounded-pill mb-2">Dudas frecuentes</span>
+            <h2 class="display-5">Preguntas frecuentes 🤔</h2>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8 reveal">
+                <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden" id="faqAcc">
+                    <?php
+                    $faqs = [
+                        ['¿Cómo hago mi pedido?', 'Súper fácil: arma tu lista aquí en la web y envíamela por WhatsApp con un clic, o escríbeme directo. También puedes elegir una de mis canastas.'],
+                        ['¿Cómo sé cuánto voy a pagar?', 'Antes de comprar te confirmo el precio total por WhatsApp. No hay sorpresas: tú apruebas y recién voy al mercado.'],
+                        ['¿Cómo pago?', 'Puedes pagar al recibir tu pedido (efectivo o Yape/Plin). Lo coordinamos por WhatsApp.'],
+                        ['¿Qué días entregan?', 'De lunes a sábado. Tú eliges el día y la hora que más te convenga al hacer tu pedido.'],
+                        ['¿Y si un producto no estaba fresco?', 'Solo llevo lo que yo misma compraría. Si algo no te convence, conversamos y lo solucionamos. 💚'],
+                    ];
+                    foreach ($faqs as $i => $f): ?>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button <?= $i? 'collapsed':''; ?> fw-bold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#faq<?= $i; ?>">
+                                    <?= htmlspecialchars($f[0]); ?>
+                                </button>
+                            </h2>
+                            <div id="faq<?= $i; ?>" class="accordion-collapse collapse <?= $i===0?'show':''; ?>" data-bs-parent="#faqAcc">
+                                <div class="accordion-body lead-soft"><?= htmlspecialchars($f[1]); ?></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════ CTA FINAL ══════════════ -->
+<section class="py-5" style="background:linear-gradient(135deg,var(--naranja),var(--rosa));color:#fff;">
+    <div class="container text-center py-4 reveal">
+        <div class="display-6 mb-2">🛒💨</div>
+        <h2 class="display-5 mb-3">Tu tiempo vale oro</h2>
+        <p class="fs-5 mb-4">Deja que Julia haga tu mercado. ¡Escríbeme ahora mismo!</p>
+        <a href="<?= whatsapp_saludo(); ?>" target="_blank" rel="noopener" class="btn btn-blanco btn-lg px-5">
+            <i class="bi bi-whatsapp me-2"></i>Pedir por WhatsApp
+        </a>
+    </div>
+</section>
+
+<script>
+const WA_URL = 'https://wa.me/<?= WHATSAPP_NUMERO; ?>';
+
+// Catálogo de sugerencias por categoría (con kg / unidades como ejemplos)
+const CATALOGO = {
+    verduras:  ['1 kg de papa','1 kg de tomate','1 kg de cebolla','1 atado de cilantro','1/2 kg de zanahoria','1 lechuga','1 kg de zapallo','3 choclos'],
+    frutas:    ['1 kg de manzana','6 plátanos','1 kg de naranja','3 paltas','1/2 kg de fresa','1 sandía mediana','1 kg de uva','4 mandarinas'],
+    carnes:    ['1 kg de pollo','1/2 kg de carne molida','1 kg de pierna de pollo','1/2 kg de bistec','6 huevos','1/4 kg de jamón','1 kg de pescado'],
+    abarrotes: ['1 bolsa de arroz 5 kg','1 litro de aceite','1 kg de azúcar','1 kg de fideos','1 kg de lentejas','1 paquete de leche','1 kg de sal'],
+};
+
+let items = [];
+
+// Render de los chips de la categoría activa
+function pintarChips(cat) {
+    const cont = document.getElementById('chipsContenedor');
+    cont.innerHTML = '';
+    (CATALOGO[cat] || []).forEach(txt => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = '<i class="bi bi-plus"></i> ' + txt;
+        chip.onclick = () => agregarItem(txt);
+        cont.appendChild(chip);
+    });
+}
+
+function agregarItem(txt) {
+    items.push(txt);
+    render();
+}
+
+function agregarCustom() {
+    const inp = document.getElementById('inputCustom');
+    const v = inp.value.trim();
+    if (v) { agregarItem(v); inp.value = ''; inp.focus(); }
+}
+
+function quitarItem(i) { items.splice(i, 1); render(); }
+
+function render() {
+    const cont = document.getElementById('listaItems');
+    const vacia = document.getElementById('listaVacia');
+    document.getElementById('contadorItems').textContent = items.length;
+    cont.innerHTML = '';
+    vacia.style.display = items.length ? 'none' : 'block';
+    items.forEach((it, i) => {
+        const row = document.createElement('div');
+        row.className = 'item-lista';
+        row.innerHTML = '<span class="fw-semibold text-dark"><i class="bi bi-check2-circle text-success me-2"></i>' +
+                        it.replace(/</g,'&lt;') + '</span>' +
+                        '<button class="quitar" title="Quitar" onclick="quitarItem(' + i + ')">&times;</button>';
+        cont.appendChild(row);
+    });
+}
+
+function enviarListaWA() {
+    let msg = '¡Hola Julia! 🛒 Quiero hacer mi pedido:';
+    if (items.length) {
+        msg += '\n\n' + items.map(i => '- ' + i).join('\n');
+    } else {
+        msg += '\n\n(Aún no armé mi lista, ¿me ayudas?)';
+    }
+    msg += '\n\n¿Me confirmas el precio y la entrega? 🙏';
+    window.open(WA_URL + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// Tabs de categoría
+document.querySelectorAll('#catTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#catTabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        pintarChips(btn.dataset.cat);
+    });
+});
+document.getElementById('inputCustom').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarCustom(); } });
+
+pintarChips('verduras');
+render();
+</script>
+
+<?php require_once 'includes/publico_footer.php'; ?>

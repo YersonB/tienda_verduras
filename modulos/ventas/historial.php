@@ -80,14 +80,9 @@ function url_pagina(int $pagina): string {
 require_once '../../includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-secondary fw-bold mb-0">
-        <i class="bi bi-clock-history me-2 text-success"></i>Historial de Ventas
-    </h2>
-    <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
-        <i class="bi bi-printer me-1"></i>Imprimir / Exportar PDF
-    </button>
-</div>
+<?php panel_header('Historial de Ventas', 'bi-clock-history', 'Todas las boletas emitidas',
+    '<button class="btn btn-light fw-semibold" onclick="window.print()"><i class="bi bi-printer me-1"></i>Imprimir / PDF</button>'
+); ?>
 
 <!-- ── Tarjetas de resumen ──────────────────────────────────────────────── -->
 <div class="row g-3 mb-4">

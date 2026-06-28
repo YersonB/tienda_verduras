@@ -115,6 +115,8 @@ require_once '../../includes/header.php';
                             <select class="form-select" id="categoria" name="categoria" required>
                                 <option value="Verduras" <?= ($producto['categoria'] == 'Verduras') ? 'selected' : ''; ?>>Verduras</option>
                                 <option value="Frutas" <?= ($producto['categoria'] == 'Frutas') ? 'selected' : ''; ?>>Frutas</option>
+                                <option value="Carnes" <?= ($producto['categoria'] == 'Carnes') ? 'selected' : ''; ?>>Carnes</option>
+                                <option value="Abarrotes" <?= ($producto['categoria'] == 'Abarrotes') ? 'selected' : ''; ?>>Abarrotes</option>
                                 <option value="Tubérculos" <?= ($producto['categoria'] == 'Tubérculos') ? 'selected' : ''; ?>>Tubérculos</option>
                                 <option value="Hierbas" <?= ($producto['categoria'] == 'Hierbas') ? 'selected' : ''; ?>>Hierbas / Aromáticas</option>
                             </select>

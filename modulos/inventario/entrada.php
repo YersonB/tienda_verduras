@@ -97,11 +97,12 @@ try {
 require_once '../../includes/header.php';
 ?>
 
+<?php panel_header('Ingreso de Stock', 'bi-box-arrow-in-down', 'Registra la mercadería que llega',
+    '<a href="../productos/index.php" class="btn btn-light fw-semibold"><i class="bi bi-arrow-left me-1"></i>Volver al inventario</a>'
+); ?>
+
 <div class="row justify-content-center">
     <div class="col-lg-10">
-        <h2 class="text-secondary fw-bold mb-4">
-            <i class="bi bi-box-arrow-in-down me-2 text-success"></i>Ingreso de Stock (Reposición)
-        </h2>
 
         <div class="row g-4">
             <!-- Formulario -->

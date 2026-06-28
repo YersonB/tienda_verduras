@@ -1,5 +1,6 @@
 <?php
 // includes/csrf.php
+require_once __DIR__ . '/../config/entorno.php';
 
 function csrf_token(): string
 {

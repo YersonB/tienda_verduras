@@ -70,21 +70,11 @@ $status = $_GET['status'] ?? '';
     </div>
 <?php endif; ?>
 
-<div class="row mb-3 align-items-center">
-    <div class="col-md-6">
-        <h2 class="text-secondary fw-bold">
-            <i class="bi bi-box-seam me-2 text-success"></i>Control de Inventario
-        </h2>
-    </div>
-    <div class="col-md-6 text-md-end">
-        <a href="../inventario/entrada.php" class="btn btn-outline-success shadow-sm me-1">
-            <i class="bi bi-box-arrow-in-down me-1"></i>Ingresar Stock
-        </a>
-        <a href="crear.php" class="btn btn-success shadow-sm">
-            <i class="bi bi-plus-circle me-2"></i>Nuevo Producto
-        </a>
-    </div>
-</div>
+<?php panel_header('Control de Inventario', 'bi-box-seam', 'Gestiona tus productos y su stock',
+    '<a href="precios_voz.php" class="btn btn-light fw-semibold"><i class="bi bi-mic-fill me-1"></i>Precios por voz</a>'
+  . '<a href="../inventario/entrada.php" class="btn btn-light fw-semibold"><i class="bi bi-box-arrow-in-down me-1"></i>Ingresar Stock</a>'
+  . '<a href="crear.php" class="btn fw-semibold" style="background:#fde047;color:#713f12;border:none;"><i class="bi bi-plus-circle me-1"></i>Nuevo Producto</a>'
+); ?>
 
 <!-- ── Filtros ──────────────────────────────────────────────────────────── -->
 <div class="card border-0 shadow-sm mb-3">
@@ -99,7 +89,7 @@ $status = $_GET['status'] ?? '';
                 <label class="form-label fw-semibold mb-1 small">Categoría</label>
                 <select name="categoria" class="form-select form-select-sm">
                     <option value="">Todas</option>
-                    <?php foreach (['Verduras','Frutas','Tubérculos','Hierbas'] as $cat): ?>
+                    <?php foreach (['Verduras','Frutas','Carnes','Abarrotes','Tubérculos','Hierbas'] as $cat): ?>
                         <option value="<?= $cat; ?>" <?= $categoria === $cat ? 'selected' : ''; ?>><?= $cat; ?></option>
                     <?php endforeach; ?>
                 </select>

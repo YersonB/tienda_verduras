@@ -18,6 +18,12 @@ try {
     // ── Total de productos registrados ───────────────────────────────────
     $total_productos = (int)$pdo->query("SELECT COUNT(*) FROM productos")->fetchColumn();
 
+    // ── Solicitudes nuevas de clientes ───────────────────────────────────
+    $solicitudes_nuevas = 0;
+    try {
+        $solicitudes_nuevas = (int)$pdo->query("SELECT COUNT(*) FROM solicitudes WHERE estado='nueva'")->fetchColumn();
+    } catch (\PDOException $e) { /* tabla aún no creada */ }
+
     // ── Productos con stock bajo (umbral: 15) ────────────────────────────
     $productos_bajo_stock = $pdo->query(
         "SELECT id, nombre, categoria, stock, unidad_medida
@@ -94,105 +100,82 @@ try {
 require_once '../../includes/header.php';
 ?>
 
-<!-- ── Saludo ────────────────────────────────────────────────────────────── -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold text-dark mb-0">
-            <i class="bi bi-speedometer2 me-2 text-success"></i>Panel Principal
-        </h2>
-        <small class="text-muted">
-            <?= ucfirst(strftime('%A %d de %B de %Y') ?: date('d/m/Y')); ?>
-            &nbsp;·&nbsp;
-            Bienvenido, <strong><?= htmlspecialchars($_SESSION['usuario_nombre']); ?></strong>
-        </small>
+<!-- ── Banner de bienvenida ──────────────────────────────────────────────── -->
+<div class="card border-0 shadow-sm mb-4 text-white overflow-hidden position-relative"
+     style="background:radial-gradient(700px 220px at 90% -40%, rgba(253,224,71,.30), transparent 60%), linear-gradient(120deg,#16a34a 0%, #15803d 55%, #14532d 100%);">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3 py-4 px-4">
+        <div>
+            <h2 class="text-white mb-1">¡Hola, <?= htmlspecialchars($_SESSION['usuario_nombre']); ?>! 👋</h2>
+            <span class="text-white-50">
+                <i class="bi bi-calendar3 me-1"></i><?= ucfirst(fecha_larga()); ?>
+            </span>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="../solicitudes/index.php" class="btn btn-light fw-semibold">
+                <i class="bi bi-inboxes me-1"></i>Solicitudes
+            </a>
+            <a href="../ventas/nueva_venta.php" class="btn btn-amarillo fw-semibold" style="background:#fde047;color:#713f12;border:none;">
+                <i class="bi bi-cart-plus me-1"></i>Nueva Venta
+            </a>
+        </div>
     </div>
-    <a href="../ventas/nueva_venta.php" class="btn btn-success">
-        <i class="bi bi-cart-plus me-1"></i>Nueva Venta
-    </a>
 </div>
+
+<?php if ($solicitudes_nuevas > 0): ?>
+<div class="alert d-flex justify-content-between align-items-center shadow-sm border-0" role="alert"
+     style="background:rgba(22,163,74,.1);">
+    <div class="text-success">
+        <i class="bi bi-inboxes-fill me-2"></i>
+        Tienes <strong><?= $solicitudes_nuevas; ?></strong> solicitud(es) nueva(s) de clientes esperando atención.
+    </div>
+    <a href="../solicitudes/index.php?estado=nueva" class="btn btn-sm btn-success">Ver solicitudes</a>
+</div>
+<?php endif; ?>
 
 <!-- ── Tarjetas de resumen ───────────────────────────────────────────────── -->
 <div class="row g-3 mb-4">
-
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="p-3 rounded-3 bg-success bg-opacity-10 flex-shrink-0">
-                    <i class="bi bi-receipt fs-3 text-success"></i>
-                </div>
-                <div>
-                    <div class="text-muted" style="font-size:.78rem;">Ventas hoy</div>
-                    <div class="fs-2 fw-bold lh-1"><?= $resumen_hoy['ventas_hoy']; ?></div>
-                    <div class="text-muted" style="font-size:.72rem;">boleta(s)</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="p-3 rounded-3 bg-primary bg-opacity-10 flex-shrink-0">
-                    <i class="bi bi-cash-coin fs-3 text-primary"></i>
-                </div>
-                <div>
-                    <div class="text-muted" style="font-size:.78rem;">Ingresos hoy</div>
-                    <div class="fs-4 fw-bold lh-1 text-primary">S/. <?= number_format($resumen_hoy['ingresos_hoy'], 2); ?></div>
-                    <div class="text-muted" style="font-size:.72rem;">recaudados</div>
+    <?php
+    $cards = [
+        ['Ventas hoy', $resumen_hoy['ventas_hoy'], 'boleta(s)', 'bi-receipt', '#16a34a', 'rgba(22,163,74,.12)'],
+        ['Ingresos hoy', 'S/. ' . number_format($resumen_hoy['ingresos_hoy'], 2), 'recaudados', 'bi-cash-coin', '#f97316', 'rgba(249,115,22,.12)'],
+        ['Productos', $total_productos, 'en inventario', 'bi-box-seam', '#0ea5e9', 'rgba(14,165,233,.12)'],
+        ['Stock bajo', $count_bajo_stock, 'producto(s)', 'bi-exclamation-triangle', $count_bajo_stock > 0 ? '#ef4444' : '#94a3b8', $count_bajo_stock > 0 ? 'rgba(239,68,68,.12)' : 'rgba(148,163,184,.14)'],
+    ];
+    foreach ($cards as $c): ?>
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm h-100 card-hover">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <span class="stat-tile" style="background:<?= $c[5]; ?>;color:<?= $c[4]; ?>;">
+                        <i class="bi <?= $c[3]; ?>"></i>
+                    </span>
+                    <div>
+                        <div class="text-muted" style="font-size:.78rem;"><?= $c[0]; ?></div>
+                        <div class="fw-bold lh-1" style="font-size:1.55rem;color:<?= $c[4]; ?>;"><?= $c[1]; ?></div>
+                        <div class="text-muted" style="font-size:.72rem;"><?= $c[2]; ?></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="p-3 rounded-3 bg-info bg-opacity-10 flex-shrink-0">
-                    <i class="bi bi-box-seam fs-3 text-info"></i>
-                </div>
-                <div>
-                    <div class="text-muted" style="font-size:.78rem;">Productos</div>
-                    <div class="fs-2 fw-bold lh-1"><?= $total_productos; ?></div>
-                    <div class="text-muted" style="font-size:.72rem;">en inventario</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm h-100 <?= $count_bajo_stock > 0 ? 'border-warning border-2' : ''; ?>">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="p-3 rounded-3 <?= $count_bajo_stock > 0 ? 'bg-warning bg-opacity-20' : 'bg-secondary bg-opacity-10'; ?> flex-shrink-0">
-                    <i class="bi bi-exclamation-triangle fs-3 <?= $count_bajo_stock > 0 ? 'text-warning' : 'text-secondary'; ?>"></i>
-                </div>
-                <div>
-                    <div class="text-muted" style="font-size:.78rem;">Stock bajo</div>
-                    <div class="fs-2 fw-bold lh-1 <?= $count_bajo_stock > 0 ? 'text-warning' : ''; ?>"><?= $count_bajo_stock; ?></div>
-                    <div class="text-muted" style="font-size:.72rem;">producto(s)</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <?php endforeach; ?>
 </div>
 
 <!-- ── Margen de ganancia del mes ────────────────────────────────────────── -->
-<div class="card border-0 shadow-sm mb-4">
+<div class="card shadow-sm mb-4">
     <div class="card-body">
-        <div class="row align-items-center g-3">
+        <div class="row align-items-center g-3 text-center text-md-start">
             <div class="col-md-3">
-                <h6 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow me-2 text-success"></i>Margen del mes</h6>
-                <small class="text-muted"><?= ucfirst(strftime('%B %Y') ?: date('m/Y')); ?></small>
+                <h5 class="section-title mb-1"><i class="bi bi-graph-up-arrow me-2 text-success"></i>Margen del mes</h5>
+                <small class="text-muted"><?= ucfirst(mes_anio()); ?></small>
             </div>
-            <div class="col-md-3 text-center border-start">
+            <div class="col-md-3 border-start">
                 <div class="text-muted small">Ingresos</div>
-                <div class="fs-5 fw-bold text-primary">S/. <?= number_format($margen_mes['ingresos'], 2); ?></div>
+                <div class="fs-5 fw-bold" style="color:#f97316;">S/. <?= number_format($margen_mes['ingresos'], 2); ?></div>
             </div>
-            <div class="col-md-3 text-center border-start">
+            <div class="col-md-3 border-start">
                 <div class="text-muted small">Costo de mercadería</div>
                 <div class="fs-5 fw-bold text-secondary">S/. <?= number_format($margen_mes['costos'], 2); ?></div>
             </div>
-            <div class="col-md-3 text-center border-start">
+            <div class="col-md-3 border-start">
                 <div class="text-muted small">Ganancia estimada</div>
                 <div class="fs-4 fw-bold text-success">
                     S/. <?= number_format($margen_mes['margen'], 2); ?>
@@ -212,7 +195,7 @@ require_once '../../includes/header.php';
     <div class="col-md-8">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
-                <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-line me-2 text-success"></i>Ventas — últimos 7 días</h6>
+                <h6 class="section-title mb-0"><i class="bi bi-bar-chart-line me-2 text-success"></i>Ventas — últimos 7 días</h6>
             </div>
             <div class="card-body pt-2">
                 <canvas id="chartVentas" height="110"></canvas>
@@ -224,7 +207,7 @@ require_once '../../includes/header.php';
     <div class="col-md-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
-                <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Últimas ventas</h6>
+                <h6 class="section-title mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Últimas ventas</h6>
             </div>
             <div class="card-body p-0">
                 <ul class="list-group list-group-flush">
@@ -268,7 +251,7 @@ require_once '../../includes/header.php';
     <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
-                <h6 class="fw-bold mb-0"><i class="bi bi-trophy me-2 text-warning"></i>Top 5 productos más vendidos</h6>
+                <h6 class="section-title mb-0"><i class="bi bi-trophy me-2 text-warning"></i>Top 5 productos más vendidos</h6>
             </div>
             <div class="card-body p-0">
                 <?php if (empty($top_productos)): ?>
@@ -317,7 +300,7 @@ require_once '../../includes/header.php';
     <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
-                <h6 class="fw-bold mb-0">
+                <h6 class="section-title mb-0">
                     <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Productos con stock bajo
                 </h6>
                 <?php if ($count_bajo_stock > 0): ?>

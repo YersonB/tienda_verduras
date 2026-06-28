@@ -2,7 +2,7 @@
 
 <footer class="footer mt-auto py-3 bg-light border-top">
     <div class="container text-center">
-        <span class="text-muted">&copy; <?= date("Y"); ?> Sabor & Frescura. Todos los derechos reservados.</span>
+        <span class="text-muted">&copy; <?= date("Y"); ?> El mercadito de Julia. Todos los derechos reservados.</span>
     </div>
 </footer>
 

@@ -95,6 +95,8 @@ require_once '../../includes/header.php';
                                 <option value="" selected disabled>Seleccione...</option>
                                 <option value="Verduras" <?= (isset($categoria) && $categoria == 'Verduras') ? 'selected' : ''; ?>>Verduras</option>
                                 <option value="Frutas" <?= (isset($categoria) && $categoria == 'Frutas') ? 'selected' : ''; ?>>Frutas</option>
+                                <option value="Carnes" <?= (isset($categoria) && $categoria == 'Carnes') ? 'selected' : ''; ?>>Carnes</option>
+                                <option value="Abarrotes" <?= (isset($categoria) && $categoria == 'Abarrotes') ? 'selected' : ''; ?>>Abarrotes</option>
                                 <option value="Tubérculos" <?= (isset($categoria) && $categoria == 'Tubérculos') ? 'selected' : ''; ?>>Tubérculos</option>
                                 <option value="Hierbas" <?= (isset($categoria) && $categoria == 'Hierbas') ? 'selected' : ''; ?>>Hierbas / Aromáticas</option>
                             </select>

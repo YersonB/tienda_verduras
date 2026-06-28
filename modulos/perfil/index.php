@@ -52,11 +52,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 require_once '../../includes/header.php';
 ?>
 
+<?php panel_header('Mi Perfil', 'bi-person-circle', 'Tus datos y seguridad'); ?>
+
 <div class="row justify-content-center">
     <div class="col-md-7">
-        <h2 class="text-secondary fw-bold mb-4">
-            <i class="bi bi-person-circle me-2 text-success"></i>Mi Perfil
-        </h2>
 
         <!-- Datos del usuario -->
         <div class="card shadow-sm border-0 mb-4">

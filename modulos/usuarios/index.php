@@ -42,14 +42,9 @@ require_once '../../includes/header.php';
     </div>
 <?php endif; ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-secondary fw-bold mb-0">
-        <i class="bi bi-people-fill me-2 text-success"></i>Gestión de Usuarios
-    </h2>
-    <a href="crear.php" class="btn btn-success shadow-sm">
-        <i class="bi bi-person-plus me-2"></i>Nuevo Usuario
-    </a>
-</div>
+<?php panel_header('Gestión de Usuarios', 'bi-people-fill', 'Administra el personal del sistema',
+    '<a href="crear.php" class="btn fw-semibold" style="background:#fde047;color:#713f12;border:none;"><i class="bi bi-person-plus me-1"></i>Nuevo Usuario</a>'
+); ?>
 
 <div class="card shadow-sm border-0">
     <div class="card-body p-0">

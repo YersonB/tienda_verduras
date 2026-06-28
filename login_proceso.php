@@ -1,5 +1,6 @@
 <?php
 // login_proceso.php
+require_once 'config/entorno.php';
 session_start();
 require_once 'includes/cabeceras.php';
 require_once 'includes/errores.php';
@@ -8,7 +9,7 @@ require_once 'includes/login_throttle.php';
 require_once 'config/conexion.php';
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: index.php");
+    header("Location: login.php");
     exit;
 }
 
@@ -18,7 +19,7 @@ csrf_verify();
 $bloqueo = throttle_bloqueo_restante();
 if ($bloqueo > 0) {
     $minutos = ceil($bloqueo / 60);
-    header("Location: index.php?error=4&min=" . $minutos);
+    header("Location: login.php?error=4&min=" . $minutos);
     exit;
 }
 
@@ -26,7 +27,7 @@ $correo   = trim($_POST['correo'] ?? '');
 $password = trim($_POST['password'] ?? '');
 
 if (empty($correo) || empty($password)) {
-    header("Location: index.php?error=1");
+    header("Location: login.php?error=1");
     exit;
 }
 
@@ -52,7 +53,7 @@ try {
 
     // Credenciales incorrectas: registrar el intento fallido
     throttle_registrar_fallo();
-    header("Location: index.php?error=1");
+    header("Location: login.php?error=1");
     exit;
 
 } catch (\PDOException $e) {

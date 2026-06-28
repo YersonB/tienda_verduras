@@ -1,6 +1,8 @@
 <?php
 // includes/cabeceras.php
 // Cabeceras HTTP defensivas. Incluir al inicio de cada punto de entrada.
+require_once __DIR__ . '/../config/entorno.php';
+require_once __DIR__ . '/errores.php';   // log_error() disponible en todas las páginas
 
 if (!headers_sent()) {
     // Evita que el navegador adivine el tipo MIME
@@ -16,9 +18,9 @@ if (!headers_sent()) {
     // 'unsafe-inline' es necesario porque hay <script> y onclick embebidos en las vistas.
     $csp = "default-src 'self'; "
          . "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-         . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-         . "font-src 'self' https://cdn.jsdelivr.net; "
-         . "img-src 'self' data:; "
+         . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+         . "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; "
+         . "img-src 'self' data: https:; "
          . "connect-src 'self'; "
          . "frame-ancestors 'none'; "
          . "base-uri 'self'; "

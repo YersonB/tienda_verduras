@@ -16,6 +16,11 @@ generar_usuario.php
 *.swp
 *~
 
+# --- Archivos temporales / comprimidos sueltos ---
+*.zip
+*.rar
+*.7z
+
 # --- Archivos del Sistema Operativo ---
 .DS_Store
 .DS_Store?
@@ -25,10 +30,11 @@ ehthumbs.db
 Desktop.ini
 
 # --- Base de Datos y Respaldos ---
-# Evita subir los archivos .sql que exportes como copia de seguridad de phpMyAdmin
+# Evita subir los .sql sueltos (copias de seguridad de phpMyAdmin, etc.)
 *.sql
-# ...pero SÍ versionar las migraciones del proyecto (esquema de la BD)
-!sql/migraciones.sql
+# ...pero SÍ versionar TODOS los .sql del proyecto dentro de /sql
+!sql/
+!sql/*.sql
 
 # --- Configuraciones del Servidor Local (XAMPP / Apache) ---
 # Por si acaso arrastras archivos de logs o configuraciones locales de Apache

@@ -1,0 +1,18 @@
+# El mercadito de Julia — configuración Apache
+
+# No listar el contenido de los directorios
+Options -Indexes
+
+# Página de inicio
+DirectoryIndex index.php
+
+# Bloquear acceso directo a archivos sensibles
+<FilesMatch "(^\.env|\.env\..*|composer\.(json|lock)|\.gitignore|\.md|\.sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

@@ -18,13 +18,9 @@ try {
 require_once '../../includes/header.php';
 ?>
 
-<div class="row">
-    <div class="col-md-12 mb-3">
-        <h2 class="text-secondary fw-bold">
-            <i class="bi bi-cart-plus me-2 text-success"></i>Nueva Venta
-        </h2>
-    </div>
-</div>
+<?php panel_header('Nueva Venta', 'bi-cart-plus', 'Registra una venta en el punto de atención',
+    '<a href="historial.php" class="btn btn-light fw-semibold"><i class="bi bi-clock-history me-1"></i>Ver historial</a>'
+); ?>
 
 <div class="row g-4">
     <div class="col-md-5">
