@@ -1,10 +1,9 @@
 -- ============================================================================
 -- migraciones.sql  ·  Tienda de Verduras
--- Ejecutar UNA sola vez en phpMyAdmin sobre la base de datos `tienda_verduras`.
 -- Estos cambios son necesarios para los módulos de entradas de stock y anulación.
+-- IMPORTANTE: primero SELECCIONA tu base en el panel izquierdo de phpMyAdmin
+-- (en local: tienda_verduras · en la nube: if0_xxxx_tienda_verduras) y luego importa.
 -- ============================================================================
-
-USE tienda_verduras;
 
 -- ── 1. Estado de las ventas (para anulación) ────────────────────────────────
 -- Agrega la columna sólo si no existe. En MySQL/MariaDB recientes:

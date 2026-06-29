@@ -118,22 +118,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $exito = true;
             $venta_ref = $solicitud_id;
 
-            // Armar el mensaje de WhatsApp con el resumen del pedido
-            $wa_msg = "¡Hola Julia! 🛒 Acabo de enviar mi pedido #" . str_pad($solicitud_id, 4, '0', STR_PAD_LEFT) . ":\n";
-            $wa_msg .= "\n*Cliente:* " . $old['nombre'];
-            $wa_msg .= "\n*Entrega:* " . $old['direccion'];
+            // Armar el mensaje de WhatsApp: orden completa con indicaciones para alistar
+            $frecLbl = ['unica'=>'Una vez','semanal'=>'Semanal','quincenal'=>'Quincenal','mensual'=>'Mensual'][$old['frecuencia']] ?? $old['frecuencia'];
+            $wa_msg  = "🛒 *NUEVO PEDIDO #" . str_pad($solicitud_id, 4, '0', STR_PAD_LEFT) . "*\n";
+            $wa_msg .= "(El mercadito de Julia)\n";
+            $wa_msg .= "\n👤 *Cliente:* " . $old['nombre'];
+            $wa_msg .= "\n📞 *Teléfono:* " . $old['telefono'];
+            $wa_msg .= "\n📍 *Dirección:* " . $old['direccion'];
+            if ($old['referencia'] !== '') $wa_msg .= "\n🔖 *Referencia:* " . $old['referencia'];
+            if ($old['distrito'] !== '')   $wa_msg .= "\n🏙️ *Distrito:* " . $old['distrito'];
+            if ($old['fecha_entrega'] !== '') $wa_msg .= "\n📅 *Entrega:* " . $old['fecha_entrega'];
+            $wa_msg .= "\n🔁 *Frecuencia:* " . $frecLbl;
+
             if (!empty($elegidas)) {
-                $wa_msg .= "\n\n*Canastas:*";
+                $wa_msg .= "\n\n🧺 *Canastas:*";
                 foreach ($elegidas as $e) {
-                    $wa_msg .= "\n- {$e['cantidad']}x {$e['nombre']} (S/. " . number_format($e['subtotal'], 2) . ")";
+                    $wa_msg .= "\n• {$e['cantidad']}x {$e['nombre']} (S/. " . number_format($e['subtotal'], 2) . ")";
                 }
-                $wa_msg .= "\n*Total estimado:* S/. " . number_format($total, 2);
+                $wa_msg .= "\n*Total canastas:* S/. " . number_format($total, 2);
             }
             if ($old['lista_libre'] !== '') {
-                $wa_msg .= "\n\n*Mi lista:*\n" . $old['lista_libre'];
+                $wa_msg .= "\n\n📋 *LISTA E INDICACIONES PARA ALISTAR:*\n" . $old['lista_libre'];
             }
-            $wa_msg .= "\n\n📍 Sigue mi pedido: " . url_seguimiento($codigo);
-            $wa_msg .= "\n\n¿Me confirmas el precio y la entrega? 🙏";
+            if ($old['notas'] !== '') {
+                $wa_msg .= "\n\n📝 *Notas:* " . $old['notas'];
+            }
+            $wa_msg .= "\n\n📍 Seguimiento: " . url_seguimiento($codigo);
         } catch (\Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             log_error('solicitud.crear', $e);
@@ -158,8 +168,8 @@ require_once 'includes/publico_header.php';
                             <div class="animate__animated animate__bounceIn" style="font-size: 4.5rem;">🎉</div>
                             <h2 class="fw-black mt-2">¡Pedido recibido, <?= htmlspecialchars($old['nombre']); ?>!</h2>
                             <p class="text-muted fs-5">
-                                Tu solicitud quedó registrada. Para confirmarlo más rápido y coordinar la
-                                entrega, ¡mándamelo por WhatsApp! 👇
+                                Tu pedido quedó registrado. <strong>Falta un paso:</strong> toca el botón verde
+                                y dale <strong>ENVIAR</strong> en WhatsApp para que Julia reciba tu pedido. 👇
                             </p>
 
                             <div class="bg-light rounded-4 p-3 mx-auto mb-3" style="max-width:420px;">
@@ -171,8 +181,9 @@ require_once 'includes/publico_header.php';
                             </div>
 
                             <div class="d-grid gap-2 col-md-9 mx-auto mt-2">
-                                <a href="<?= whatsapp_link($wa_msg); ?>" target="_blank" rel="noopener" class="btn btn-wa btn-lg fw-bold">
-                                    <i class="bi bi-whatsapp me-2"></i>Confirmar mi pedido por WhatsApp
+                                <a href="<?= whatsapp_link($wa_msg); ?>" target="_blank" rel="noopener"
+                                   class="btn btn-wa btn-lg fw-bold animate__animated animate__pulse animate__infinite">
+                                    <i class="bi bi-whatsapp me-2"></i>Enviar mi pedido a Julia
                                 </a>
                                 <a href="index.php" class="btn btn-outline-secondary">
                                     <i class="bi bi-house me-1"></i>Volver al inicio
@@ -318,5 +329,22 @@ require_once 'includes/publico_header.php';
         <?php endif; ?>
     </div>
 </section>
+
+<?php if (!$exito): ?>
+<script>
+// Si el cliente viene del cotizador, precargar su lista
+(function () {
+    try {
+        const lista = sessionStorage.getItem('mercadito_lista');
+        const campo = document.querySelector('textarea[name="lista_libre"]');
+        if (lista && campo && !campo.value.trim()) {
+            campo.value = lista;
+            sessionStorage.removeItem('mercadito_lista');
+            campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } catch (e) {}
+})();
+</script>
+<?php endif; ?>
 
 <?php require_once 'includes/publico_footer.php'; ?>

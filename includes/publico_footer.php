@@ -16,9 +16,9 @@
                 <h6 class="fw-bold mb-3">Explora</h6>
                 <ul class="list-unstyled text-white-50 lh-lg">
                     <li><a href="<?= BASE_URL ?>/index.php#como-funciona" class="link-light text-decoration-none">Cómo funciona</a></li>
-                    <li><a href="<?= BASE_URL ?>/index.php#lista" class="link-light text-decoration-none">Arma tu lista</a></li>
+                    <li><a href="<?= BASE_URL ?>/cotizar.php" class="link-light text-decoration-none">Cotiza tu pedido</a></li>
                     <li><a href="<?= BASE_URL ?>/index.php#canastas" class="link-light text-decoration-none">Canastas</a></li>
-                    <li><a href="<?= BASE_URL ?>/solicitar.php" class="link-light text-decoration-none">Pedido detallado</a></li>
+                    <li><a href="<?= BASE_URL ?>/seguimiento.php" class="link-light text-decoration-none">Seguir mi pedido</a></li>
                 </ul>
             </div>
             <div class="col-6 col-md-4">

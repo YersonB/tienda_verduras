@@ -42,7 +42,7 @@ require_once 'includes/publico_header.php';
                 </p>
                 <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start animate__animated animate__fadeInUp animate__delay-1s">
                     <a href="#lista" class="btn btn-amarillo btn-lg">
-                        <i class="bi bi-pencil-square me-2"></i>Arma tu lista
+                        <i class="bi bi-magic me-2"></i>Cotiza tu pedido
                     </a>
                     <a href="<?= whatsapp_saludo(); ?>" target="_blank" rel="noopener" class="btn btn-wa btn-lg">
                         <i class="bi bi-whatsapp me-2"></i>Pídeme directo
@@ -114,60 +114,28 @@ require_once 'includes/publico_header.php';
     </div>
 </section>
 
-<!-- ══════════════ ARMA TU LISTA (INTERACTIVO) ══════════════ -->
+<!-- ══════════════ COTIZA TU PEDIDO ══════════════ -->
 <section id="lista" class="seccion py-5" style="background:linear-gradient(135deg,var(--verde) 0%,var(--verde-osc) 60%,var(--verde-prof) 100%);color:#fff;">
     <div class="container py-4">
-        <div class="text-center mb-5 reveal">
-            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">✍️ En segundos</span>
-            <h2 class="display-5 text-white">Arma tu lista y te la mando lista</h2>
-            <p class="fs-5 text-white-50">Toca los productos para agregarlos o escribe el tuyo. Luego, ¡un clic a WhatsApp! 👇</p>
+        <div class="text-center mb-4 reveal">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">🧮 Al instante</span>
+            <h2 class="display-5 text-white">Cotiza tu pedido en segundos</h2>
+            <p class="fs-5 text-white-50">Escribe tu lista y te decimos cuánto sale al toque. Si te conviene, seguimos con tu pedido. 👇</p>
         </div>
 
-        <div class="row g-4 justify-content-center align-items-start">
-            <!-- Selector de productos -->
-            <div class="col-lg-6 reveal">
+        <div class="row justify-content-center reveal">
+            <div class="col-lg-7">
                 <div class="card border-0 shadow-lg">
-                    <div class="card-body p-4">
-                        <ul class="nav nav-pills mb-3 gap-2 flex-nowrap overflow-auto" id="catTabs">
-                            <li class="nav-item"><button class="nav-link active" data-cat="verduras" type="button">🥬 Verduras</button></li>
-                            <li class="nav-item"><button class="nav-link" data-cat="frutas" type="button">🍎 Frutas</button></li>
-                            <li class="nav-item"><button class="nav-link" data-cat="carnes" type="button">🥩 Carnes</button></li>
-                            <li class="nav-item"><button class="nav-link" data-cat="abarrotes" type="button">🛒 Abarrotes</button></li>
-                        </ul>
-
-                        <div id="chipsContenedor" class="d-flex flex-wrap gap-2 mb-4" style="min-height:120px;"></div>
-
-                        <label class="form-label fw-bold text-dark small">¿No está en la lista? Escríbelo:</label>
-                        <div class="input-group">
-                            <input type="text" id="inputCustom" class="form-control" placeholder="Ej. 2 kg de uva, pan integral...">
-                            <button class="btn btn-naranja px-3" type="button" onclick="agregarCustom()">
-                                <i class="bi bi-plus-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lista del cliente (nota) -->
-            <div class="col-lg-5 reveal d2">
-                <div class="nota">
-                    <div class="nota__head text-white d-flex justify-content-between align-items-center px-4 py-3" style="border-radius:22px 22px 0 0;">
-                        <span class="fw-bold"><i class="bi bi-card-checklist me-2"></i>Mi lista</span>
-                        <span class="badge bg-white text-success rounded-pill" id="contadorItems">0</span>
-                    </div>
-                    <div class="p-4">
-                        <div id="listaVacia" class="text-center py-4 lead-soft">
-                            <div style="font-size:3rem;">📝</div>
-                            <p class="mb-0">Tu lista está vacía.<br>Agrega productos de la izquierda.</p>
-                        </div>
-                        <div id="listaItems"></div>
-
-                        <div class="d-grid gap-2 mt-3">
-                            <button type="button" class="btn btn-wa btn-lg" onclick="enviarListaWA()">
-                                <i class="bi bi-whatsapp me-2"></i>Enviar mi lista por WhatsApp
+                    <div class="card-body p-4 p-md-5">
+                        <label class="form-label fw-bold text-dark">Tu lista de compras</label>
+                        <textarea id="listaLanding" class="form-control form-control-lg mb-3" rows="6"
+                            placeholder="Ej:&#10;2 kg de papa&#10;1 kg tomate&#10;6 huevos&#10;medio kilo de carne molida&#10;3 lechugas"></textarea>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success btn-lg fw-bold" id="btnCotizarLanding">
+                                <i class="bi bi-magic me-2"></i>Ver cuánto sale mi pedido
                             </button>
                             <a href="<?= whatsapp_saludo(); ?>" target="_blank" rel="noopener" class="btn btn-outline-success">
-                                <i class="bi bi-chat-dots me-2"></i>Prefiero escribir directo
+                                <i class="bi bi-chat-dots me-2"></i>Prefiero escribir directo a Julia
                             </a>
                         </div>
                         <p class="text-center lead-soft small mt-3 mb-0">
@@ -273,7 +241,7 @@ require_once 'includes/publico_header.php';
                 <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden" id="faqAcc">
                     <?php
                     $faqs = [
-                        ['¿Cómo hago mi pedido?', 'Súper fácil: arma tu lista aquí en la web y envíamela por WhatsApp con un clic, o escríbeme directo. También puedes elegir una de mis canastas.'],
+                        ['¿Cómo hago mi pedido?', 'Súper fácil: escribe tu lista en "Cotiza tu pedido" y verás al instante cuánto sale; si te conviene, continúas con tu pedido. También puedes escribirme directo por WhatsApp o elegir una de mis canastas.'],
                         ['¿Cómo sé cuánto voy a pagar?', 'Antes de comprar te confirmo el precio total por WhatsApp. No hay sorpresas: tú apruebas y recién voy al mercado.'],
                         ['¿Cómo pago?', 'Puedes pagar al recibir tu pedido (efectivo o Yape/Plin). Lo coordinamos por WhatsApp.'],
                         ['¿Qué días entregan?', 'De lunes a sábado. Tú eliges el día y la hora que más te convenga al hacer tu pedido.'],
@@ -311,83 +279,12 @@ require_once 'includes/publico_header.php';
 </section>
 
 <script>
-const WA_URL = 'https://wa.me/<?= WHATSAPP_NUMERO; ?>';
-
-// Catálogo de sugerencias por categoría (con kg / unidades como ejemplos)
-const CATALOGO = {
-    verduras:  ['1 kg de papa','1 kg de tomate','1 kg de cebolla','1 atado de cilantro','1/2 kg de zanahoria','1 lechuga','1 kg de zapallo','3 choclos'],
-    frutas:    ['1 kg de manzana','6 plátanos','1 kg de naranja','3 paltas','1/2 kg de fresa','1 sandía mediana','1 kg de uva','4 mandarinas'],
-    carnes:    ['1 kg de pollo','1/2 kg de carne molida','1 kg de pierna de pollo','1/2 kg de bistec','6 huevos','1/4 kg de jamón','1 kg de pescado'],
-    abarrotes: ['1 bolsa de arroz 5 kg','1 litro de aceite','1 kg de azúcar','1 kg de fideos','1 kg de lentejas','1 paquete de leche','1 kg de sal'],
-};
-
-let items = [];
-
-// Render de los chips de la categoría activa
-function pintarChips(cat) {
-    const cont = document.getElementById('chipsContenedor');
-    cont.innerHTML = '';
-    (CATALOGO[cat] || []).forEach(txt => {
-        const chip = document.createElement('span');
-        chip.className = 'chip';
-        chip.innerHTML = '<i class="bi bi-plus"></i> ' + txt;
-        chip.onclick = () => agregarItem(txt);
-        cont.appendChild(chip);
-    });
-}
-
-function agregarItem(txt) {
-    items.push(txt);
-    render();
-}
-
-function agregarCustom() {
-    const inp = document.getElementById('inputCustom');
-    const v = inp.value.trim();
-    if (v) { agregarItem(v); inp.value = ''; inp.focus(); }
-}
-
-function quitarItem(i) { items.splice(i, 1); render(); }
-
-function render() {
-    const cont = document.getElementById('listaItems');
-    const vacia = document.getElementById('listaVacia');
-    document.getElementById('contadorItems').textContent = items.length;
-    cont.innerHTML = '';
-    vacia.style.display = items.length ? 'none' : 'block';
-    items.forEach((it, i) => {
-        const row = document.createElement('div');
-        row.className = 'item-lista';
-        row.innerHTML = '<span class="fw-semibold text-dark"><i class="bi bi-check2-circle text-success me-2"></i>' +
-                        it.replace(/</g,'&lt;') + '</span>' +
-                        '<button class="quitar" title="Quitar" onclick="quitarItem(' + i + ')">&times;</button>';
-        cont.appendChild(row);
-    });
-}
-
-function enviarListaWA() {
-    let msg = '¡Hola Julia! 🛒 Quiero hacer mi pedido:';
-    if (items.length) {
-        msg += '\n\n' + items.map(i => '- ' + i).join('\n');
-    } else {
-        msg += '\n\n(Aún no armé mi lista, ¿me ayudas?)';
-    }
-    msg += '\n\n¿Me confirmas el precio y la entrega? 🙏';
-    window.open(WA_URL + '?text=' + encodeURIComponent(msg), '_blank');
-}
-
-// Tabs de categoría
-document.querySelectorAll('#catTabs button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('#catTabs button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        pintarChips(btn.dataset.cat);
-    });
+// La lista de la landing continúa en el cotizador (que la interpreta con precios)
+document.getElementById('btnCotizarLanding').addEventListener('click', () => {
+    const texto = document.getElementById('listaLanding').value.trim();
+    try { if (texto) sessionStorage.setItem('mercadito_cotizar', texto); } catch (e) {}
+    window.location.href = 'cotizar.php';
 });
-document.getElementById('inputCustom').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarCustom(); } });
-
-pintarChips('verduras');
-render();
 </script>
 
 <?php require_once 'includes/publico_footer.php'; ?>

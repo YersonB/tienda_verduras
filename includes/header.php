@@ -97,6 +97,11 @@ function panel_header(string $titulo, string $icono = 'bi-grid-1x2', string $sub
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link <?= nav_active('canastas'); ?>" href="<?= BASE_URL ?>/modulos/canastas/index.php">
+                        <i class="bi bi-basket2 me-1"></i>Canastas
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link <?= nav_active('nueva_venta'); ?>" href="<?= BASE_URL ?>/modulos/ventas/nueva_venta.php">
                         <i class="bi bi-cart-plus me-1"></i>Nueva Venta
                     </a>
@@ -111,9 +116,9 @@ function panel_header(string $titulo, string $icono = 'bi-grid-1x2', string $sub
                                 $GLOBALS['__solicitudes_nuevas'] = (int)$pdo->query("SELECT COUNT(*) FROM solicitudes WHERE estado='nueva'")->fetchColumn();
                             } catch (\Throwable $e) { $GLOBALS['__solicitudes_nuevas'] = 0; }
                         }
-                        if ($GLOBALS['__solicitudes_nuevas'] > 0): ?>
-                            <span class="badge rounded-pill bg-danger"><?= $GLOBALS['__solicitudes_nuevas']; ?></span>
-                        <?php endif; ?>
+                        $__nuevas = (int)$GLOBALS['__solicitudes_nuevas'];
+                        ?>
+                        <span id="badge-solicitudes" class="badge rounded-pill bg-danger <?= $__nuevas > 0 ? '' : 'd-none'; ?>"><?= $__nuevas; ?></span>
                     </a>
                 </li>
                 <li class="nav-item">

@@ -11,8 +11,9 @@ if (!headers_sent()) {
     header('X-Frame-Options: DENY');
     // Limita la información de referer enviada a terceros
     header('Referrer-Policy: strict-origin-when-cross-origin');
-    // Desactiva APIs sensibles del navegador que no usamos
-    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+    // Permite micrófono (precios por voz) y geolocalización (mapa de delivery)
+    // solo en nuestro propio sitio; cámara desactivada.
+    header('Permissions-Policy: geolocation=(self), microphone=(self), camera=()');
 
     // CSP: se permiten los CDNs que el proyecto usa (Bootstrap, Bootstrap Icons, Chart.js).
     // 'unsafe-inline' es necesario porque hay <script> y onclick embebidos en las vistas.

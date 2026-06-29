@@ -41,6 +41,7 @@ $titulo = 'Seguimiento de pedido — ' . NEGOCIO_NOMBRE;
 require_once 'includes/publico_header.php';
 ?>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
     .track { max-width:520px; margin:0 auto; }
     .step { display:flex; gap:16px; position:relative; padding-bottom:30px; }
@@ -108,6 +109,20 @@ require_once 'includes/publico_header.php';
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
+
+                                <?php if ($estado === 'en_camino'): ?>
+                                <!-- Mapa en vivo del repartidor -->
+                                <div class="mt-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold mb-0"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Tu pedido en camino</h6>
+                                        <span class="badge bg-success" id="etaBadge">📍 ubicando...</span>
+                                    </div>
+                                    <div id="mapaCliente" style="height: 340px; border-radius: 16px; background:#eef2f7;"></div>
+                                    <p class="text-muted small mt-2 mb-0" id="mapaEstado">
+                                        <i class="bi bi-info-circle me-1"></i>Mostramos la ubicación del repartidor en tiempo real.
+                                    </p>
+                                </div>
+                                <?php endif; ?>
                             <?php endif; ?>
 
                             <!-- Resumen -->
@@ -169,5 +184,84 @@ require_once 'includes/publico_header.php';
         <?php endif; ?>
     </div>
 </section>
+
+<?php if ($solicitud && $estado === 'en_camino'): ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+    const CODIGO = '<?= htmlspecialchars($solicitud['codigo'], ENT_QUOTES); ?>';
+    const cont = document.getElementById('mapaCliente');
+    if (!cont || typeof L === 'undefined') return;
+
+    let map = L.map('mapaCliente').setView([-12.0464, -77.0428], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '© OpenStreetMap'
+    }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 300);
+
+    // Icono del repartidor
+    const iconoMoto = L.divIcon({
+        html: '<div style="font-size:28px;line-height:1;">🛵</div>',
+        className: '', iconSize: [30, 30], iconAnchor: [15, 15]
+    });
+    let marcador = null, marcadorCliente = null, miUbic = null;
+
+    // Ubicación del cliente (opcional) para mostrar destino y distancia
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            p => {
+                miUbic = [p.coords.latitude, p.coords.longitude];
+                marcadorCliente = L.marker(miUbic).addTo(map).bindPopup('🏠 Tu ubicación');
+            }, () => {}, { enableHighAccuracy: true, timeout: 8000 }
+        );
+    }
+
+    function distanciaKm(a, b) {
+        const R = 6371, dLat = (b[0]-a[0])*Math.PI/180, dLng = (b[1]-a[1])*Math.PI/180;
+        const x = Math.sin(dLat/2)**2 + Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+    }
+
+    function actualizar() {
+        fetch('ubicacion_get.php?codigo=' + encodeURIComponent(CODIGO))
+        .then(r => r.json())
+        .then(d => {
+            const eta = document.getElementById('etaBadge');
+            const est = document.getElementById('mapaEstado');
+            if (d.estado === 'entregada') { location.reload(); return; }
+            if (!d.ok || d.lat === null || d.lng === null) {
+                eta.textContent = '⏳ esperando al repartidor';
+                return;
+            }
+            const punto = [d.lat, d.lng];
+            if (!marcador) { marcador = L.marker(punto, { icon: iconoMoto }).addTo(map).bindPopup('🛵 Repartidor'); }
+            else { marcador.setLatLng(punto); }
+
+            // Encajar vista (repartidor + cliente si hay)
+            if (miUbic) {
+                map.fitBounds(L.latLngBounds([punto, miUbic]).pad(0.3));
+                const km = distanciaKm(punto, miUbic);
+                const min = Math.max(1, Math.round(km / 22 * 60)); // ~22 km/h ciudad
+                eta.textContent = '⏱️ ~' + min + ' min (' + km.toFixed(1) + ' km)';
+            } else {
+                map.setView(punto, 16);
+                eta.textContent = '🛵 en camino';
+            }
+
+            // Aviso si la señal está vieja
+            if (d.hace_seg !== null && d.hace_seg > 60) {
+                est.innerHTML = '<i class="bi bi-wifi-off me-1"></i>Última señal hace ' + Math.round(d.hace_seg/60) + ' min.';
+            } else {
+                est.innerHTML = '<i class="bi bi-broadcast me-1 text-success"></i>Ubicación en tiempo real.';
+            }
+        })
+        .catch(() => {});
+    }
+
+    actualizar();
+    setInterval(actualizar, 6000);   // refresca cada 6 segundos
+})();
+</script>
+<?php endif; ?>
 
 <?php require_once 'includes/publico_footer.php'; ?>

@@ -1,10 +1,10 @@
 -- ============================================================================
 -- migracion_servicio.sql  ·  "Nosotros hacemos tu mercado"
 -- Tablas para el servicio de compras a domicilio: canastas y solicitudes.
--- Ejecutar UNA vez en phpMyAdmin sobre la base `tienda_verduras`.
+-- Ejecutar UNA vez en phpMyAdmin sobre la base del proyecto.
+-- IMPORTANTE: primero SELECCIONA tu base en el panel izquierdo de phpMyAdmin
+-- (en local: tienda_verduras · en la nube: if0_xxxx_tienda_verduras) y luego importa.
 -- ============================================================================
-
-USE tienda_verduras;
 
 -- ── Canastas predefinidas ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS canastas (

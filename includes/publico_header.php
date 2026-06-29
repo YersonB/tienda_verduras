@@ -147,8 +147,7 @@ $BASE   = BASE_URL;
         <div class="collapse navbar-collapse" id="navPublico">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1">
                 <li class="nav-item"><a class="nav-link" href="<?= $BASE; ?>/index.php#como-funciona">Cómo funciona</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= $BASE; ?>/index.php#lista">Arma tu lista</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= $BASE; ?>/index.php#canastas">Canastas</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= $BASE; ?>/cotizar.php">Cotiza tu pedido</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= $BASE; ?>/seguimiento.php">Seguir mi pedido</a></li>
                 <li class="nav-item ms-lg-2">
                     <a class="btn btn-wa px-3" href="<?= whatsapp_saludo(); ?>" target="_blank" rel="noopener">

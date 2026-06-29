@@ -90,7 +90,7 @@ CREATE TABLE `solicitud_canastas` (
   KEY `fk_sc_canasta` (`canasta_id`),
   CONSTRAINT `fk_sc_canasta` FOREIGN KEY (`canasta_id`) REFERENCES `canastas` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_sc_solicitud` FOREIGN KEY (`solicitud_id`) REFERENCES `solicitudes` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `solicitudes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -109,11 +109,15 @@ CREATE TABLE `solicitudes` (
   `lista_libre` text DEFAULT NULL,
   `notas` text DEFAULT NULL,
   `total_estimado` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `venta_id` int(11) DEFAULT NULL,
   `estado` enum('nueva','en_proceso','comprando','en_camino','entregada','cancelada') NOT NULL DEFAULT 'nueva',
+  `lat` decimal(10,7) DEFAULT NULL,
+  `lng` decimal(10,7) DEFAULT NULL,
+  `ubicacion_actualizada` datetime DEFAULT NULL,
   `creado_en` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_solicitud_codigo` (`codigo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `usuarios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

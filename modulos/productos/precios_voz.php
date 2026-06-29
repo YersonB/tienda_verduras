@@ -87,10 +87,12 @@ function iniciar() {
     recog = new Recognition();
     recog.lang = 'es-PE';
     recog.interimResults = true;   // mostrar texto en vivo mientras hablas
-    recog.continuous = true;
+    recog.continuous = false;      // en móvil (Android) es mucho más fiable una frase a la vez
     escuchando = true;
     btnMic.classList.replace('btn-success', 'btn-danger');
-    elEstado.textContent = '🎙️ Escuchando... dicta tus productos';
+    elEstado.textContent = '🎙️ Iniciando micrófono...';
+    recog.onstart = () => { elEstado.textContent = '🎙️ Habla ahora: "producto precio"'; };
+    recog.onspeechstart = () => { elEstado.textContent = '🟢 Te escucho...'; };
 
     recog.onresult = (e) => {
         let interim = '';
@@ -130,7 +132,13 @@ function iniciar() {
         // 'no-speech' / 'aborted' se ignoran: el dictado sigue escuchando
     };
 
-    recog.onend = () => { if (escuchando) { try { recog.start(); } catch (e) {} } }; // reinicia tras silencio
+    // Al terminar cada frase, reinicia con una pequeña pausa (evita el bug de "loop" en móvil)
+    recog.onend = () => {
+        if (escuchando) {
+            elEstado.textContent = '… listo para la siguiente. Habla.';
+            setTimeout(() => { if (escuchando) { try { recog.start(); } catch (e) {} } }, 350);
+        }
+    };
 
     try { recog.start(); }
     catch (e) { mostrarToast('No se pudo iniciar el micrófono. Intenta de nuevo.', 'danger'); detener(); }

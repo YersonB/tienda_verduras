@@ -84,6 +84,46 @@ document.addEventListener('submit', function (e) {
         });
     }
 }, true);
+
+// ── Aviso de pedidos nuevos (sondea cada 30s) ───────────────────────────────
+(function () {
+    const badge = document.getElementById('badge-solicitudes');
+    if (!badge) return;
+    let ultimo = parseInt(badge.textContent || '0', 10) || 0;
+
+    function beep() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.type = 'sine'; o.frequency.value = 880;
+            g.gain.setValueAtTime(0.001, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            o.start(); o.stop(ctx.currentTime + 0.42);
+        } catch (e) {}
+    }
+
+    function revisar() {
+        fetch('<?= BASE_URL ?>/modulos/solicitudes/contar_nuevas.php', { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(d => {
+                if (!d.ok) return;
+                const n = d.nuevas;
+                badge.textContent = n;
+                badge.classList.toggle('d-none', n === 0);
+                if (n > ultimo) {
+                    beep();
+                    if (typeof mostrarToast === 'function') {
+                        mostrarToast('🛒 ¡Nuevo pedido recibido! (' + n + ' nuevos)', 'success');
+                    }
+                }
+                ultimo = n;
+            })
+            .catch(() => {});
+    }
+    setInterval(revisar, 30000);   // cada 30 segundos
+})();
 </script>
 </body>
 </html>

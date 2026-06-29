@@ -80,7 +80,10 @@ $linkSeg = 'https://wa.me/' . $wa . '?text=' . rawurlencode($msgSeg);
         <?php endif; ?>
         <span class="badge <?= $badge[$s['estado']] ?? 'bg-secondary'; ?> ms-1"><?= htmlspecialchars($estadoLbl); ?></span>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="repartir.php?id=<?= $s['id']; ?>" class="btn btn-sm btn-primary">
+            <i class="bi bi-truck me-1"></i>Iniciar reparto (mapa)
+        </a>
         <a href="https://wa.me/<?= htmlspecialchars($wa); ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">
             <i class="bi bi-chat-dots me-1"></i>Escribir
         </a>
@@ -89,6 +92,13 @@ $linkSeg = 'https://wa.me/' . $wa . '?text=' . rawurlencode($msgSeg);
         </a>
     </div>
 </div>
+
+<?php if (!empty($s['venta_id'])): ?>
+<div class="alert alert-success d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-check-circle-fill me-2"></i>Pedido registrado como <strong>Venta #<?= str_pad($s['venta_id'], 4, '0', STR_PAD_LEFT); ?></strong>.</span>
+    <a href="../ventas/detalle_venta.php?id=<?= (int)$s['venta_id']; ?>" class="btn btn-sm btn-success">Ver boleta</a>
+</div>
+<?php endif; ?>
 
 <div class="row g-4">
     <!-- Datos del cliente -->
@@ -160,7 +170,12 @@ $linkSeg = 'https://wa.me/' . $wa . '?text=' . rawurlencode($msgSeg);
 
         <?php if (!empty($s['lista_libre'])): ?>
         <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3"><h6 class="mb-0 fw-bold"><i class="bi bi-card-list me-2 text-success"></i>Lista libre del cliente</h6></div>
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-card-list me-2 text-success"></i>Lista libre del cliente</h6>
+                <a href="../ventas/cotizar.php?solicitud=<?= $s['id']; ?>" class="btn btn-sm btn-success">
+                    <i class="bi bi-magic me-1"></i>Cotizar automáticamente
+                </a>
+            </div>
             <div class="card-body"><pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;"><?= htmlspecialchars($s['lista_libre']); ?></pre></div>
         </div>
         <?php endif; ?>

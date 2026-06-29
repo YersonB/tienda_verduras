@@ -2,9 +2,9 @@
 -- migracion_seguimiento.sql  ·  Rastreo de delivery
 -- Agrega código de seguimiento y el estado "en_camino" a las solicitudes.
 -- Ejecutar UNA vez en phpMyAdmin sobre la base del proyecto.
+-- IMPORTANTE: primero SELECCIONA tu base en el panel izquierdo de phpMyAdmin
+-- (en local: tienda_verduras · en la nube: if0_xxxx_tienda_verduras) y luego importa.
 -- ============================================================================
-
-USE tienda_verduras;
 
 -- 1) Código público de seguimiento
 ALTER TABLE solicitudes

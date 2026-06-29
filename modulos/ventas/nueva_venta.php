@@ -19,7 +19,8 @@ require_once '../../includes/header.php';
 ?>
 
 <?php panel_header('Nueva Venta', 'bi-cart-plus', 'Registra una venta en el punto de atención',
-    '<a href="historial.php" class="btn btn-light fw-semibold"><i class="bi bi-clock-history me-1"></i>Ver historial</a>'
+    '<a href="cotizar.php" class="btn btn-light fw-semibold"><i class="bi bi-magic me-1"></i>Cotizar lista</a>'
+  . '<a href="historial.php" class="btn btn-light fw-semibold"><i class="bi bi-clock-history me-1"></i>Ver historial</a>'
 ); ?>
 
 <div class="row g-4">
